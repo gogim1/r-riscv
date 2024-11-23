@@ -1,6 +1,7 @@
 use clap::{Parser, ValueEnum};
 use elf::{endian::AnyEndian, ElfBytes};
 mod utils;
+mod memory;
 
 #[derive(Parser, Debug)]
 #[command(version)]

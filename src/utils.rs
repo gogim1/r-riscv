@@ -1,4 +1,4 @@
-use std::{fmt, process};
+use std::fmt;
 
 use elf::{
     abi::EM_RISCV,
@@ -23,8 +23,7 @@ where
     if hdr.e_machine == EM_RISCV {
         println!("ISA: RISC-V({:#02x})", hdr.e_machine);
     } else {
-        println!("ISA: Unsupported({:#02x})", hdr.e_machine);
-        process::exit(-1);
+        panic!("ISA: Unsupported({:#02x})", hdr.e_machine);
     }
 }
 
@@ -51,13 +50,14 @@ pub fn print_elf_info(file: &ElfBytes<'_, AnyEndian>) {
         println!("[{}]\t{: <12}\t{:#x}\t{}", idx, name, address, size);
     }
 
-    let segments = file
-        .segments()
-        .expect("shdrs offsets should be valid");
+    let segments = file.segments().expect("shdrs offsets should be valid");
     println!("Number of Segments: {}", segments.len());
     println!("ID\tFlags\tAddress\tFSize\tMSize");
     for (idx, seg) in segments.iter().enumerate() {
-        println!("[{}]\t{:#x}\t{:#x}\t{}\t{}", idx, seg.p_flags, seg.p_vaddr, seg.p_filesz, seg.p_memsz);
+        println!(
+            "[{}]\t{:#x}\t{:#x}\t{}\t{}",
+            idx, seg.p_flags, seg.p_vaddr, seg.p_filesz, seg.p_memsz
+        );
     }
 
     println!("===================================");
