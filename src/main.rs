@@ -1,7 +1,8 @@
+mod memory;
+mod utils;
+
 use clap::{Parser, ValueEnum};
 use elf::{endian::AnyEndian, ElfBytes};
-mod utils;
-mod memory;
 
 #[derive(Parser, Debug)]
 #[command(version)]
@@ -42,7 +43,11 @@ fn main() {
     let file = ElfBytes::<AnyEndian>::minimal_parse(&file_data)
         .expect(&format!("Fail to load ELF file {}", args.elf_file));
 
+    let mut memory = memory::MemoryManager::new();
+    utils::load_elf_to_memory(&file, &mut memory);
+
     if args.verbose {
         utils::print_elf_info(&file);
+        memory.print_info();
     }
 }

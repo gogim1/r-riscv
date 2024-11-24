@@ -7,6 +7,8 @@ use elf::{
     ElfBytes,
 };
 
+use super::memory::MemoryManager;
+
 pub fn print_elf_header<E>(hdr: &FileHeader<E>)
 where
     E: EndianParse + fmt::Debug,
@@ -61,4 +63,54 @@ pub fn print_elf_info(file: &ElfBytes<'_, AnyEndian>) {
     }
 
     println!("===================================");
+}
+
+pub fn load_elf_to_memory(file: &ElfBytes<'_, AnyEndian>, memory: &mut MemoryManager) {
+    let segments = file.segments().unwrap();
+    for (i, seg) in segments.iter().enumerate() {
+        let addr = seg.p_vaddr;
+        let filesz = seg.p_filesz;
+        let memsz = seg.p_memsz;
+        if addr + memsz > 0xffffffff {
+            panic!(
+                "ELF address space larger than 32bit! Seg {} has max addr of {:#x}",
+                i,
+                addr + memsz
+            );
+        }
+        for p in addr..(addr + memsz) {
+            let p = p as u32;
+            if !memory.is_page_exist(p) {
+                memory.add_page(p);
+            }
+            if p < (addr + filesz) as u32 {
+                let val = file.segment_data(&seg).unwrap()[(p - addr as u32) as usize];
+                memory.set_byte(p, val);
+            } else {
+                memory.set_byte(p, 0);
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+
+    use elf::{endian::AnyEndian, ElfBytes};
+
+    use crate::*;
+
+    #[test]
+    fn read_elf() {
+        let path = std::path::PathBuf::from("riscv-elf/ackermann.riscv");
+        let file_data = std::fs::read(path).unwrap();
+        let file = ElfBytes::<AnyEndian>::minimal_parse(&file_data).unwrap();
+
+        utils::print_elf_info(&file);
+
+        let mut memory = memory::MemoryManager::new();
+        utils::load_elf_to_memory(&file, &mut memory);
+        fs::write("/tmp/elf_memory", memory.dump_memory()).unwrap();
+    }
 }

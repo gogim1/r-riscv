@@ -1,4 +1,4 @@
-struct MemoryManager {
+pub struct MemoryManager {
     memory: Vec<Option<Vec<Option<Vec<u8>>>>>,
 }
 
@@ -188,7 +188,11 @@ impl MemoryManager {
         ret
     }
 
-    fn is_page_exist(&self, addr: u32) -> bool {
+    pub fn print_info(&self) {
+        println!("{}", self.dump_memory());
+    }
+
+    pub fn is_page_exist(&self, addr: u32) -> bool {
         self.is_addr_exist(addr)
     }
 
