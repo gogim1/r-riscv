@@ -5,7 +5,7 @@ pub struct MemoryManager {
 impl MemoryManager {
     pub fn new() -> Self {
         Self {
-            memory: vec![None; 0x3ff],
+            memory: vec![None; 0x400],
         }
     }
 
@@ -14,12 +14,12 @@ impl MemoryManager {
         let j = MemoryManager::get_second_entry_id(addr);
 
         if self.memory[i as usize].is_none() {
-            let entry = vec![None; 0x3ff];
+            let entry = vec![None; 0x400];
             self.memory[i as usize] = Some(entry);
         }
         let second_entry = self.memory[i as usize].as_mut().unwrap();
         if second_entry[j as usize].is_none() {
-            let page = vec![0; 0xfff];
+            let page = vec![0; 0x1000];
             second_entry[j as usize] = Some(page);
             true
         } else {

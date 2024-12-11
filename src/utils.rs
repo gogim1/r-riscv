@@ -93,6 +93,13 @@ pub fn load_elf_to_memory(file: &ElfBytes<'_, AnyEndian>, memory: &mut MemoryMan
     }
 }
 
+pub fn get_entry<E>(hdr: &FileHeader<E>) -> u32
+where
+    E: EndianParse + fmt::Debug,
+{
+    hdr.e_entry as u32
+}
+
 #[cfg(test)]
 mod tests {
     use std::fs;
